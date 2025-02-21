@@ -1,5 +1,6 @@
 package com.example.githubreader.controller;
 
+import com.example.githubreader.exception.GlobalExceptionHandler;
 import com.example.githubreader.service.GithubContentService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +14,7 @@ import java.util.List;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -27,7 +29,10 @@ class GithubControllerTest {
     void setUp() {
         githubContentService = mock(GithubContentService.class);
         GithubController githubController = new GithubController(githubContentService);
-        mockMvc = MockMvcBuilders.standaloneSetup(githubController).build();
+        GlobalExceptionHandler exceptionHandler = new GlobalExceptionHandler();
+        mockMvc = MockMvcBuilders.standaloneSetup(githubController)
+                .setControllerAdvice(exceptionHandler) // Добавляем обработчик исключений
+                .build();
     }
 
     @Test
@@ -88,10 +93,11 @@ class GithubControllerTest {
     @DisplayName("Should return 500 when saveAllToSingleFile throws exception")
     void shouldReturnErrorWhenSaveAllToSingleFileFails() throws Exception {
         String repoUrl = "https://github.com/user/repo";
-        doThrow(new RuntimeException("Failed to save")).when(githubContentService).saveAllContentsToSingleFile(repoUrl);
+        doThrow(new RuntimeException("Simulated failure")).when(githubContentService).saveAllContentsToSingleFile(repoUrl);
 
         mockMvc.perform(post("/api/github/save-all-to-single-file")
                         .param("repoUrl", repoUrl))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(containsString("Internal Server Error: Simulated failure")));
     }
 }

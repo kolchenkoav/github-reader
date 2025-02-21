@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Сервис для работы с содержимым репозиториев GitHub.
+ */
 @Service
 @RequiredArgsConstructor
 public class GithubContentService {
@@ -30,6 +33,13 @@ public class GithubContentService {
     private static final String GITHUB_HTML_BASE_URL = "https://github.com/";
     private static final String OUTPUT_DIR = "output/";
 
+    /**
+     * Получает содержимое файла из репозитория GitHub.
+     *
+     * @param repoUrl URL репозитория.
+     * @param filePath Путь к файлу в репозитории.
+     * @return Содержимое файла.
+     */
     public String getFileContent(String repoUrl, String filePath) {
         String apiUrl = convertToApiUrl(repoUrl) + "/contents/" + filePath;
 
@@ -47,6 +57,12 @@ public class GithubContentService {
         ).getBody();
     }
 
+    /**
+     * Получает список содержимого репозитория.
+     *
+     * @param repoUrl URL репозитория.
+     * @return Список содержимого репозитория.
+     */
     public List<String> getRepositoryContents(String repoUrl) {
         List<String> contents = new ArrayList<>();
         String apiUrl = convertToApiUrl(repoUrl) + "/contents";
@@ -56,11 +72,21 @@ public class GithubContentService {
         return contents;
     }
 
+    /**
+     * Сохраняет содержимое репозитория в файлы.
+     *
+     * @param repoUrl URL репозитория.
+     */
     public void saveRepositoryContents(String repoUrl) {
         String apiUrl = convertToApiUrl(repoUrl) + "/contents";
         fetchAndSaveContents(apiUrl);
     }
 
+    /**
+     * Сохраняет все содержимое репозитория в один файл.
+     *
+     * @param repoUrl URL репозитория.
+     */
     public void saveAllContentsToSingleFile(String repoUrl) {
         List<String> contents = new ArrayList<>();
         String apiUrl = convertToApiUrl(repoUrl) + "/contents";
@@ -167,10 +193,10 @@ public class GithubContentService {
                             String formattedLine = "File: <a href=\"" + fileLink + "\">" + path + "</a> \n" + content + "\n";
                             contents.add(formattedLine);
                         }
-                        logger.debug("Processed file: {}", path);
+                        logger.debug("Обработан файл: {}", path);
                     }
                 } else {
-                    logger.debug("Excluded file by pattern: {}", path);
+                    logger.debug("Исключен файл по шаблону: {}", path);
                 }
             } else if ("dir".equals(type)) {
                 processDirectory((String) file.get("url"), contents, htmlBaseUrl, saveToFile);
@@ -191,7 +217,7 @@ public class GithubContentService {
                         logger.debug("Collected file for single file: {}", path);
                     }
                 } else {
-                    logger.debug("Excluded file by pattern: {}", path);
+                    logger.debug("Исключен файл по шаблону: {}", path);
                 }
             } else if ("dir".equals(type)) {
                 processDirectoryForSingleFile((String) file.get("url"), contents);
@@ -218,7 +244,7 @@ public class GithubContentService {
                 processFiles(files, contents, htmlBaseUrl, saveToFile);
             }
         } catch (Exception e) {
-            logger.error("Error processing directory {}: {}", dirUrl, e.getMessage());
+            logger.error("Ошибка при обработке директории {}: {}", dirUrl, e.getMessage());
         }
     }
 
@@ -241,7 +267,7 @@ public class GithubContentService {
                 processFilesForSingleFile(files, contents);
             }
         } catch (Exception e) {
-            logger.error("Error processing directory for single file {}: {}", dirUrl, e.getMessage());
+            logger.error("Ошибка при обработке директории для одного файла {}: {}", dirUrl, e.getMessage());
         }
     }
 
@@ -250,7 +276,7 @@ public class GithubContentService {
             Path filePath = Paths.get(OUTPUT_DIR, path);
             Files.createDirectories(filePath.getParent());
             Files.writeString(filePath, content);
-            logger.info("Saved file: {}", filePath);
+            logger.info("Сохранен файл: {}", filePath);
         } catch (IOException e) {
             logger.error("Failed to save file {}: {}", path, e.getMessage());
             throw new RuntimeException("Failed to save file: " + path, e);
@@ -275,7 +301,7 @@ public class GithubContentService {
                     String.class
             ).getBody();
         } catch (Exception e) {
-            logger.error("Error fetching file content from {}: {}", downloadUrl, e.getMessage());
+            logger.error("Ошибка при получении содержимого файла из {}: {}", downloadUrl, e.getMessage());
             return null;
         }
     }
