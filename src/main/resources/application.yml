@@ -1,0 +1,38 @@
+spring:
+  application:
+    name: github-reader
+
+github:
+  token: ${GITHUB_TOKEN}
+
+  includePatterns:
+    - "**/*.md"
+    - "*.md"           # Добавлено для файлов в корне
+    - "**/*.txt"
+    - "*.txt"
+    - "**/*.xml"
+    - "*.xml"
+    - "**/*.java"
+    - "*.java"
+    - "**/*.jte"
+    - "*.jte"
+    - "**/*.yaml"
+    - "*.yaml"
+    - "**/*.yml"
+    - "*.yml"
+    - "**/*.graphqls"
+    - "*.graphqls"
+    - "**/*.properties"
+    - "*.properties"
+    -
+  excludePatterns:
+    - ".mvn/**"
+    - ".idea/**"
+    - ".gigaide/**"
+    - "target/**"
+    - ".gitignore"
+    - ".gitattributes"
+    - "mvnw"
+    - "mvnw.cmd"
+
+singleFilePath: "output/all_contents.txt"  # Путь к файлу для всего контента
