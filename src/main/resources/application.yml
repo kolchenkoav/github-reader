@@ -6,25 +6,20 @@ github:
   token: ${GITHUB_TOKEN}
 
   includePatterns:
-    - "**/*.md"
-    - "*.md"           # Добавлено для файлов в корне
+#    - "**/*.md"
+#    - "*.md"           # Добавлено для файлов в корне
     - "**/*.txt"
-    - "*.txt"
     - "**/*.xml"
     - "*.xml"
     - "**/*.java"
-    - "*.java"
     - "**/*.jte"
-    - "*.jte"
     - "**/*.yaml"
     - "*.yaml"
     - "**/*.yml"
     - "*.yml"
     - "**/*.graphqls"
-    - "*.graphqls"
     - "**/*.properties"
-    - "*.properties"
-    -
+
   excludePatterns:
     - ".mvn/**"
     - ".idea/**"
