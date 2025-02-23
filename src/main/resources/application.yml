@@ -33,4 +33,4 @@ github:
 singleFilePath: "output/all_contents.txt"  # Путь к файлу для всего контента
 
 directory:
-  defaultPath: "E:\\projects\\java\\p3_tariff_calculator"  # Путь по умолчанию
+  defaultPath: "E:\\projects\\java\\p3_tariff_calculator"  # Путь к директории для сохранения файлов

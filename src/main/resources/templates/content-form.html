@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Content Source Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: auto;
+        }
+        .message {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #e0ffe0; /* Зеленый фон для успеха */
+        }
+        .success { background-color: #e0ffe0; }
+        .error { background-color: #ffe0e0; }
+        #loading-indicator {
+            display: none;
+            margin-top: 10px;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="form-container">
+    <h2>Save Content to Single File</h2>
+    <form th:action="@{/content-form}" th:object="${contentRequest}" method="post" onsubmit="showLoading()">
+        <div>
+            <label>
+                <input type="radio" name="sourceType" th:value="'github'"
+                       th:checked="${contentRequest.sourceType == 'github'}"
+                       onchange="clearPathField(); hideMessage(); updatePathLabel()"/> GitHub Repository
+            </label>
+            <label>
+                <input type="radio" name="sourceType" th:value="'directory'"
+                       th:checked="${contentRequest.sourceType == 'directory'}"
+                       onchange="clearPathField(); hideMessage(); updatePathLabel()"/> Local Directory
+            </label>
+        </div>
+        <div style="margin-top: 10px;">
+            <label for="path" id="path-label">Path (URL or Directory):</label>
+            <input type="text" th:field="*{path}" id="path" style="width: 100%;"
+                   placeholder="Enter URL or directory path"/>
+        </div>
+        <div style="margin-top: 10px;">
+            <button type="submit">Save to File</button>
+        </div>
+        <div id="loading-indicator">
+            Формирование файла...
+        </div>
+    </form>
+
+    <div th:if="${message}" class="message" id="message-block" th:classappend="${isSuccess} ? 'success' : 'error'">
+        <p th:text="${message}"></p>
+    </div>
+</div>
+
+<script>
+    function clearPathField() {
+        document.getElementById('path').value = '';
+    }
+
+    function showLoading() {
+        document.getElementById('loading-indicator').style.display = 'block';
+    }
+
+    function hideMessage() {
+        const messageBlock = document.getElementById('message-block');
+        if (messageBlock) {
+            messageBlock.style.display = 'none';
+        }
+    }
+
+    function updatePathLabel() {
+        const pathLabel = document.getElementById('path-label');
+        const selectedSource = document.querySelector('input[name="sourceType"]:checked');
+        if (selectedSource) {
+            pathLabel.textContent = selectedSource.value === 'github' ? 'Path URL:' : 'Path Directory:';
+        } else {
+            pathLabel.textContent = 'Path (URL or Directory):';
+        }
+    }
+
+    // Сбрасываем стили и обновляем метку при загрузке страницы
+    window.onload = function() {
+        const messageBlock = document.getElementById('message-block');
+        if (messageBlock) {
+            messageBlock.style.display = 'block'; // Показываем блок, если message есть
+        }
+        updatePathLabel();
+    };
+</script>
+</body>
+</html>
