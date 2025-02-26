@@ -1,7 +1,6 @@
 package com.example.githubreader.controller;
 
 import com.example.githubreader.service.GithubContentService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -11,10 +10,13 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/github")
-@RequiredArgsConstructor
 public class GithubController {
 
     private final GithubContentService githubContentService;
+
+    public GithubController(GithubContentService githubContentService) {
+        this.githubContentService = githubContentService;
+    }
 
     /**
      * Получает содержимое файла из GitHub репозитория.

@@ -1,9 +1,11 @@
 package com.example.githubreader.service;
 
 import com.example.githubreader.config.GithubConfig;
+import com.example.githubreader.utils.PathUtils;
 import jakarta.annotation.PreDestroy;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -25,9 +27,19 @@ import java.util.stream.Collectors;
 /**
  * Сервис для работы с содержимым репозиториев GitHub.
  */
-@Slf4j
 @Service
 public class GithubContentService {
+
+    private static final Logger log = LoggerFactory.getLogger(GithubContentService.class);
+
+    @Value("${file.output.path}")
+    private String outputPath;
+
+    @Value("${file.name}")
+    private String fileName;
+
+    @Value("${github.token}")
+    private String token;
 
     private final RestTemplate restTemplate;
     private final GithubConfig githubConfig;
@@ -58,7 +70,7 @@ public class GithubContentService {
         String apiUrl = convertToApiUrl(repoUrl) + "/contents/" + filePath;
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Accept", "application/vnd.github.v3.raw");
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -108,13 +120,13 @@ public class GithubContentService {
         fetchAndCollectContents(apiUrl, contents);
 
         try {
-            Path filePath = Paths.get(githubConfig.getSingleFilePath());
+            Path filePath = Paths.get(outputPath, fileName+ "repo_" + PathUtils.getNameRepo(repoUrl) + ".txt");
             Files.createDirectories(filePath.getParent()); // Создаем родительские директории
             String allContent = contents.stream().collect(Collectors.joining("\n"));
             Files.writeString(filePath, allContent);
             log.info("Saved all contents to single file: {}", filePath);
         } catch (IOException e) {
-            log.error("Failed to save all contents to {}: {}", githubConfig.getSingleFilePath(), e.getMessage());
+            log.error("Failed to save all contents to {}: {}", Paths.get(outputPath, fileName), e.getMessage());
             throw new RuntimeException("Failed to save all contents to single file", e);
         }
     }
@@ -128,7 +140,7 @@ public class GithubContentService {
      */
     private void fetchAndProcessContents(String apiUrl, List<String> contents, String htmlBaseUrl) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Accept", "application/vnd.github.v3+json");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -177,7 +189,7 @@ public class GithubContentService {
      */
     private void fetchAndSaveContents(String apiUrl) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Accept", "application/vnd.github.v3+json");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -221,7 +233,7 @@ public class GithubContentService {
      */
     private void fetchAndCollectContents(String apiUrl, List<String> contents) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Accept", "application/vnd.github.v3+json");
         HttpEntity<String> entity = new HttpEntity<>(headers);
 
@@ -332,7 +344,7 @@ public class GithubContentService {
      */
     private void processDirectory(String dirUrl, List<String> contents, String htmlBaseUrl, boolean saveToFile) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Accept", "application/vnd.github.v3+json");
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -361,7 +373,7 @@ public class GithubContentService {
      */
     private void processDirectoryForSingleFile(String dirUrl, List<String> contents) {
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
         headers.set("Accept", "application/vnd.github.v3+json");
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -412,7 +424,7 @@ public class GithubContentService {
         }
 
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Authorization", "Bearer " + githubConfig.getToken());
+        headers.set("Authorization", "Bearer " + token);
 
         HttpEntity<String> entity = new HttpEntity<>(headers);
 

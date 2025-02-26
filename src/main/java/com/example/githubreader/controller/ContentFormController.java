@@ -4,50 +4,50 @@ import com.example.githubreader.model.ContentSourceRequest;
 import com.example.githubreader.service.DirectoryContentService;
 import com.example.githubreader.service.GithubContentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 
-/**
- * Контроллер для работы с формой выбора источника контента.
- */
 @Controller
 public class ContentFormController {
 
     private final GithubContentService githubContentService;
     private final DirectoryContentService directoryContentService;
+    private final Environment environment;
+
+    @Value("${file.output.path}")
+    private String outputPath; // Получаем путь из application.yml
 
     @Autowired
-    public ContentFormController(GithubContentService githubContentService, DirectoryContentService directoryContentService) {
+    public ContentFormController(GithubContentService githubContentService,
+                                 DirectoryContentService directoryContentService,
+                                 Environment environment) {
         this.githubContentService = githubContentService;
         this.directoryContentService = directoryContentService;
+        this.environment = environment;
     }
 
-    /**
-     * Переадресация с корневого пути на /content-form.
-     */
     @GetMapping("/")
     public String redirectToContentForm() {
         return "redirect:/content-form";
     }
 
-    /**
-     * Отображает форму для выбора источника контента.
-     */
     @GetMapping("/content-form")
     public String showForm(Model model) {
         if (!model.containsAttribute("contentRequest")) {
             model.addAttribute("contentRequest", new ContentSourceRequest());
         }
-        model.addAttribute("message", null); // Очищаем сообщение при загрузке
+        model.addAttribute("message", null);
+        model.addAttribute("isDockerProfile", "docker".equals(environment.getActiveProfiles()[0]));
+        // outputPath = "c:/tmp/output/"; Только для профиля docker
+        model.addAttribute("outputPath", outputPath); // Передаем путь в модель
         return "content-form";
     }
 
-    /**
-     * Обрабатывает отправку формы и вызывает соответствующий сервис.
-     */
     @PostMapping("/content-form")
     public String submitForm(@ModelAttribute ContentSourceRequest contentRequest, Model model) {
         try {
@@ -65,6 +65,8 @@ public class ContentFormController {
             model.addAttribute("isSuccess", false);
         }
         model.addAttribute("contentRequest", contentRequest);
+        model.addAttribute("isDockerProfile", "docker".equals(environment.getActiveProfiles()[0]));
+        model.addAttribute("outputPath", outputPath); // Передаем путь в модель
         return "content-form";
     }
 }

@@ -1,7 +1,6 @@
 package com.example.githubreader.controller;
 
 import com.example.githubreader.service.DirectoryContentService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -15,10 +14,13 @@ import java.nio.charset.StandardCharsets;
  */
 @RestController
 @RequestMapping("/api/directory")
-@RequiredArgsConstructor
 public class DirectoryController {
 
     private final DirectoryContentService directoryContentService;
+
+    public DirectoryController(DirectoryContentService directoryContentService) {
+        this.directoryContentService = directoryContentService;
+    }
 
     /**
      * Считывает содержимое всех файлов из указанной директории и сохраняет в один файл.
