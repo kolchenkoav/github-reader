@@ -1,6 +1,5 @@
 package com.example.githubreader.config;
 
-import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 
@@ -11,12 +10,14 @@ import java.util.List;
  */
 @Configuration
 @ConfigurationProperties(prefix = "github")
-@Data
 public class GithubConfig {
-    /**
-     * Токен для доступа к GitHub API.
-     */
-    private String token;
+    public GithubConfig() {
+    }
+
+    public GithubConfig(List<String> includePatterns, List<String> excludePatterns) {
+        this.includePatterns = includePatterns;
+        this.excludePatterns = excludePatterns;
+    }
 
     /**
      * Список шаблонов для включения репозиториев.
@@ -28,8 +29,22 @@ public class GithubConfig {
      */
     private List<String> excludePatterns;
 
-    /**
-     * Путь к файлу для сохранения содержимого одного файла.
-     */
-    private String singleFilePath = "output/all_contents.txt";
+
+
+    public List<String> getIncludePatterns() {
+        return includePatterns;
+    }
+
+    public void setIncludePatterns(List<String> includePatterns) {
+        this.includePatterns = includePatterns;
+    }
+
+    public List<String> getExcludePatterns() {
+        return excludePatterns;
+    }
+
+    public void setExcludePatterns(List<String> excludePatterns) {
+        this.excludePatterns = excludePatterns;
+    }
+
 }

@@ -16,7 +16,7 @@
             margin-top: 20px;
             padding: 10px;
             border: 1px solid #ccc;
-            background-color: #e0ffe0; /* Зеленый фон для успеха */
+            background-color: #e0ffe0;
         }
         .success { background-color: #e0ffe0; }
         .error { background-color: #ffe0e0; }
@@ -25,23 +25,29 @@
             margin-top: 10px;
             color: #555;
         }
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
 <div class="form-container">
     <h2>Save Content to Single File</h2>
+    <p>The file will be located in the directory: <span th:text="${outputPath}"></span></p>
+
     <form th:action="@{/content-form}" th:object="${contentRequest}" method="post" onsubmit="showLoading()">
-        <div>
-            <label>
+        <div id="source-type-container">
+            <label th:class="${isDockerProfile} ? 'hidden'">
                 <input type="radio" name="sourceType" th:value="'github'"
                        th:checked="${contentRequest.sourceType == 'github'}"
                        onchange="clearPathField(); hideMessage(); updatePathLabel()"/> GitHub Repository
             </label>
-            <label>
+            <label th:class="${isDockerProfile} ? 'hidden' : ''">
                 <input type="radio" name="sourceType" th:value="'directory'"
                        th:checked="${contentRequest.sourceType == 'directory'}"
                        onchange="clearPathField(); hideMessage(); updatePathLabel()"/> Local Directory
             </label>
+            <input type="hidden" name="sourceType" th:value="'github'" th:if="${isDockerProfile}"/>
         </div>
         <div style="margin-top: 10px;">
             <label for="path" id="path-label">Path (URL or Directory):</label>
@@ -56,7 +62,8 @@
         </div>
     </form>
 
-    <div th:if="${message}" class="message" id="message-block" th:classappend="${isSuccess} ? 'success' : 'error'">
+    <div th:if="${message != null}" class="message" id="message-block"
+         th:classappend="${isSuccess != null and isSuccess} ? 'success' : 'error'">
         <p th:text="${message}"></p>
     </div>
 </div>
@@ -87,11 +94,10 @@
         }
     }
 
-    // Сбрасываем стили и обновляем метку при загрузке страницы
     window.onload = function() {
         const messageBlock = document.getElementById('message-block');
         if (messageBlock) {
-            messageBlock.style.display = 'block'; // Показываем блок, если message есть
+            messageBlock.style.display = 'block';
         }
         updatePathLabel();
     };

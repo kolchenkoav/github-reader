@@ -1,6 +1,8 @@
 spring:
   application:
     name: github-reader
+  profiles:
+    active: ${SPRING_PROFILE:default}  # По умолчанию "default", можно переопределить через переменную окружения
 
 github:
   token: ${GITHUB_TOKEN}
@@ -30,7 +32,22 @@ github:
     - "mvnw"
     - "mvnw.cmd"
 
-singleFilePath: "output/all_contents.txt"  # Путь к файлу для всего контента
+---
+spring:
+  config:
+    activate:
+      on-profile: default  # Профиль для локального запуска на Windows
+file:
+  output:
+    path: "C:\\tmp\\output\\"  # ?Путь для Windows с экранированными слэшами
+  name: "all_contents_from_"
 
-directory:
-  defaultPath: "E:\\projects\\java\\p3_tariff_calculator"  # Путь к директории для сохранения файлов
+---
+spring:
+  config:
+    activate:
+      on-profile: docker  # Профиль для запуска в Docker
+file:
+  output:
+    path: "/app/output/"  # Путь для Docker (Linux-стиль)
+  name: "all_contents_from_"

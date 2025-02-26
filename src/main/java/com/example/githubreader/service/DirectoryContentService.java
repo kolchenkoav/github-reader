@@ -1,10 +1,11 @@
 // File: src/main/java/com/example/githubreader/service/DirectoryContentService.java
 package com.example.githubreader.service;
 
-import com.example.githubreader.config.DirectoryConfig;
 import com.example.githubreader.config.GithubConfig;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.example.githubreader.utils.PathUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,14 +22,22 @@ import java.util.stream.Collectors;
 /**
  * Сервис для работы с содержимым локальных директорий.
  */
-@Slf4j
 @Service
-@RequiredArgsConstructor
 public class DirectoryContentService {
+    private static final Logger log = LoggerFactory.getLogger(DirectoryContentService.class);
 
-    private final DirectoryConfig directoryConfig;
+    @Value("${file.output.path}")
+    private String outputPath;
+
+    @Value("${file.name}")
+    private String fileName;
+
     private final GithubConfig githubConfig;  // Добавляем GithubConfig для паттернов
     private final ExecutorService executorService = Executors.newVirtualThreadPerTaskExecutor();
+
+    public DirectoryContentService(GithubConfig githubConfig) {
+        this.githubConfig = githubConfig;
+    }
 
     /**
      * Считывает содержимое всех файлов из директории и сохраняет в один файл.
@@ -36,15 +45,14 @@ public class DirectoryContentService {
      * @param directoryPath Путь к директории (опционально, если не указан — используется defaultPath)
      */
     public void saveAllContentsToFile(String directoryPath) {
-        String effectivePath = directoryPath != null ? directoryPath : directoryConfig.getDefaultPath();
-        if (effectivePath == null) {
+        if (directoryPath == null) {
             throw new IllegalArgumentException("Directory path is not provided and defaultPath is not configured");
         }
 
         try {
-            Path dirPath = Paths.get(effectivePath);
+            Path dirPath = Paths.get(directoryPath);
             if (!Files.isDirectory(dirPath)) {
-                throw new IllegalArgumentException("Provided path is not a directory: " + effectivePath);
+                throw new IllegalArgumentException("Provided path is not a directory: " + directoryPath);
             }
 
             List<String> contents = new ArrayList<>();
@@ -74,18 +82,21 @@ public class DirectoryContentService {
                 future.get();
             }
 
-            String dirName = dirPath.getFileName().toString();
-            String outputFileName = "all_contents_from_" + dirName + ".txt";
-            Path outputPath = Paths.get("output", outputFileName);
+            // Нормализуем путь в зависимости от ОС
+            Path directory = Paths.get(outputPath);
+            if (!Files.exists(directory)) {
+                Files.createDirectories(directory);
+                log.info("Created directory: {}", directory);
+            }
 
-            Files.createDirectories(outputPath.getParent());
+            Path filePath = directory.resolve(fileName + "directory_" + PathUtils.getNameDir(directoryPath) + ".txt");
             String allContent = contents.stream().collect(Collectors.joining("\n"));
-            Files.writeString(outputPath, allContent);
+            Files.writeString(filePath, allContent);
 
             log.info("Saved all directory contents to file: {}", outputPath);
 
         } catch (Exception e) {
-            log.error("Failed to process directory {}: {}", effectivePath, e.getMessage());
+            log.error("Failed to process directory {}: {}", directoryPath, e.getMessage());
             throw new RuntimeException("Failed to save directory contents to file", e);
         }
     }
